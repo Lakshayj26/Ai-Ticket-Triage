@@ -62,6 +62,7 @@ app.use("/api/inngest", serve({ client: inngest, functions }));
 
 // Global error handling middleware for handling ApiError cleanly in JSON format
 app.use((err, req, res, next) => {
+  console.error("❌ Global Error Handler Caught:", err);
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
   const errors = err.errors || [];
