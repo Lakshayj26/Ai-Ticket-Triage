@@ -13,6 +13,7 @@ dist-ssr
 *.local
 .env
 .env.*
+FRONTEND_GUIDE.md
 
 # Editor directories and files
 .vscode/*
