@@ -1,0 +1,38 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "inngest": "node inngest dev -u http://localhost:3000/api/inngest"
+  },
+  "author": "Lakshay",
+  "license": "ISC",
+  "dependencies": {
+    "@inngest/agent-kit": "^0.13.2",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.2",
+    "inngest": "^4.11.0",
+    "jsonwebtoken": "^9.0.3",
+    "mailgen": "^2.0.34",
+    "multer": "^2.2.0",
+    "nodemailer": "^9.0.1",
+    "nodemon": "^3.1.14",
+    "pg": "^8.22.0",
+    "prisma": "^7.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "@types/pg": "^8.20.0"
+  }
+}

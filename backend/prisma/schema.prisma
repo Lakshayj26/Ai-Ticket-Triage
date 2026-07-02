@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model attachment {
+  id          Int       @id @default(autoincrement())
+  ticket_id   Int
+  uploaded_by Int
+  file_name   String    @db.VarChar(255)
+  file_url    String
+  mime_type   String?   @db.VarChar(100)
+  file_size   BigInt?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  ticket      ticket    @relation(fields: [ticket_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_attachment_ticket")
+  users       users     @relation(fields: [uploaded_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_attachment_user")
+}
+
+model organization {
+  id                                        String    @id @db.Uuid
+  name                                      String    @db.VarChar(100)
+  description                               String?
+  created_by                                Int?
+  created_at                                DateTime? @default(now()) @db.Timestamp(6)
+  users_organization_created_byTousers      users?    @relation("organization_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_org_admin")
+  users_users_organization_idToorganization users[]   @relation("users_organization_idToorganization")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ticket {
+  id                              Int          @id @default(autoincrement())
+  created_by                      Int
+  assigned_to                     Int?
+  title                           String       @db.VarChar(255)
+  description                     String?
+  helpful_notes                   String?
+  priority                        String?      @default("medium")
+  status                          String?      @default("todo")
+  required_skills                 String[]     @default([])
+  created_at                      DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at                      DateTime?    @default(now()) @db.Timestamp(6)
+  attachment                      attachment[]
+  users_ticket_assigned_toTousers users?       @relation("ticket_assigned_toTousers", fields: [assigned_to], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_ticket_assignee")
+  users_ticket_created_byTousers  users        @relation("ticket_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_ticket_creator")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model users {
+  id                                               Int            @id @default(autoincrement())
+  organization_id                                  String?        @db.Uuid
+  email                                            String         @unique @db.VarChar(100)
+  password                                         String         @db.VarChar(255)
+  role                                             String?        @default("member")
+  skills                                           String[]       @default([])
+  is_email_verified                                Boolean?       @default(false)
+  refresh_token                                    String?
+  created_at                                       DateTime?      @default(now()) @db.Timestamp(6)
+  username                                         String         @unique @db.VarChar(50)
+  forgot_password_token                            String?
+  forgot_password_expiry                           DateTime?      @db.Timestamp(6)
+  email_verification_token                         String?
+  email_verification_expiry                        DateTime?      @db.Timestamp(6)
+  attachment                                       attachment[]
+  organization_organization_created_byTousers      organization[] @relation("organization_created_byTousers")
+  ticket_ticket_assigned_toTousers                 ticket[]       @relation("ticket_assigned_toTousers")
+  ticket_ticket_created_byTousers                  ticket[]       @relation("ticket_created_byTousers")
+  organization_users_organization_idToorganization organization?  @relation("users_organization_idToorganization", fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_org")
+}

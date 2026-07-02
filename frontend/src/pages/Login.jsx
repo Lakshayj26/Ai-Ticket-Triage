@@ -1,0 +1,133 @@
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { LogIn, KeyRound, Mail, AlertCircle, Ticket } from "lucide-react";
+
+const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [emailOrUsername, setEmailOrUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    if (!emailOrUsername || !password) {
+      setError("Please fill in all fields.");
+      setLoading(false);
+      return;
+    }
+
+    const result = await login(emailOrUsername, password);
+    if (result.success) {
+      const inviteToken = localStorage.getItem("inviteToken");
+      if (inviteToken) {
+        navigate(`/join-org?token=${inviteToken}`);
+      } else {
+        navigate("/");
+      }
+    } else {
+      setError(result.message);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#0b0f19] px-4">
+      {/* Background glow effects */}
+      <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 h-72 w-72 rounded-full bg-purple-500/10 blur-[100px] pointer-events-none" />
+
+      <div className="w-full max-w-md bg-slate-900/50 border border-slate-800 backdrop-blur-xl rounded-2xl p-8 shadow-2xl z-10">
+        {/* Brand header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-400 mb-3 border border-indigo-500/20">
+            <Ticket className="h-6 w-6" />
+          </div>
+          <h1 className="text-2xl font-extrabold text-slate-100 tracking-tight">Welcome Back</h1>
+          <p className="text-slate-400 text-sm mt-1">Sign in to manage support tickets with AI</p>
+        </div>
+
+        {error && (
+          <div className="mb-6 flex items-start gap-2.5 px-4 py-3 bg-rose-500/5 border border-rose-500/10 rounded-lg text-rose-400 text-sm">
+            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email / Username field */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              Email or Username
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                <Mail className="h-4.5 w-4.5" />
+              </span>
+              <input
+                type="text"
+                value={emailOrUsername}
+                onChange={(e) => setEmailOrUsername(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-11 pr-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                placeholder="you@example.com or username"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Password field */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                <KeyRound className="h-4.5 w-4.5" />
+              </span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-11 pr-4 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Submit button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          >
+            {loading ? (
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <>
+                <LogIn className="h-5 w-5" />
+                Sign In
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Footer info */}
+        <p className="text-center text-sm text-slate-500 mt-8">
+          Don't have an account?{" "}
+          <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+            Sign up
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
