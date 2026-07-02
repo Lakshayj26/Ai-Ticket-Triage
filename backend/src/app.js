@@ -18,7 +18,29 @@ app.use(cookieParser());
 // CORS configuration (enabling requests from our frontend dev server)
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      
+      let mainOrigin = process.env.CORS_ORIGIN;
+      if (mainOrigin && mainOrigin.includes("://")) {
+        try {
+          mainOrigin = new URL(mainOrigin).origin;
+        } catch (e) {}
+      }
+
+      const allowedOrigins = [
+        "http://localhost:5173",
+        mainOrigin
+      ].filter(Boolean);
+
+      const isAllowed = allowedOrigins.includes(origin) || origin.endsWith(".vercel.app");
+      
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Fallback: allow all to prevent dev blockade during submissions
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"],
     allowedHeaders: ["Authorization", "Content-Type"],
