@@ -14,6 +14,13 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
+// Ensure req.cookies is always an object to prevent undefined errors in downstream handlers
+app.use((req, _, next) => {
+  if (!req.cookies) {
+    req.cookies = {};
+  }
+  next();
+});
 
 // CORS configuration (enabling requests from our frontend dev server)
 app.use(

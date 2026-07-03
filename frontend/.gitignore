@@ -25,3 +25,5 @@ FRONTEND_GUIDE.md
 *.njsproj
 *.sln
 *.sw?
+
+.vercel

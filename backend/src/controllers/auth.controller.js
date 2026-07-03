@@ -289,10 +289,12 @@ export const resendEmailVerification = asyncHandler(async (req, res) => {
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken =
-        req.cookies.refreshToken || req.body.refreshToken;
-    if (!incomingRefreshToken) {
-        throw new ApiError(401, "Unauthorized access");
-    }
+    (req.cookies && req.cookies.refreshToken) || (req.body && req.body.refreshToken);
+if (!incomingRefreshToken) {
+    throw new ApiError(401, "Unauthorized access");
+}
+
+
 
     try {
         const decodeToken = jwt.verify(

@@ -15,7 +15,7 @@ const sendEmail = async (options) => {
 
   const transporter = nodemailer.createTransport({
     host: process.env.MAITTRAP_SMTP_HOST,
-    port: process.env.MAITTRAP_SMTP_PORT,
+    port: parseInt(process.env.MAITTRAP_SMTP_PORT, 10),
     auth: {
       user: process.env.MAITTRAP_SMTP_USER,
       pass: process.env.MAITTRAP_SMTP_PASS,
