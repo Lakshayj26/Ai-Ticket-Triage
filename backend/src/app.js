@@ -14,20 +14,20 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
-// Ensure req.cookies is always an object to prevent undefined errors in downstream handlers
-app.use((req, _, next) => {
-  if (!req.cookies) {
-    req.cookies = {};
-  }
-  next();
-});
+// // Ensure req.cookies is always an object to prevent undefined errors in downstream handlers
+// app.use((req, _, next) => {
+//   if (!req.cookies) {
+//     req.cookies = {};
+//   }
+//   next();
+// });
 
 // CORS configuration (enabling requests from our frontend dev server)
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      
+
       let mainOrigin = process.env.CORS_ORIGIN;
       if (mainOrigin && mainOrigin.includes("://")) {
         try {
@@ -35,13 +35,13 @@ app.use(
         } catch (e) {}
       }
 
-      const allowedOrigins = [
-        "http://localhost:5173",
-        mainOrigin
-      ].filter(Boolean);
+      const allowedOrigins = ["http://localhost:5173", mainOrigin].filter(
+        Boolean
+      );
 
-      const isAllowed = allowedOrigins.includes(origin) || origin.endsWith(".vercel.app");
-      
+      const isAllowed =
+        allowedOrigins.includes(origin) || origin.endsWith(".vercel.app");
+
       if (isAllowed) {
         callback(null, true);
       } else {
@@ -53,12 +53,6 @@ app.use(
     allowedHeaders: ["Authorization", "Content-Type"],
   })
 );
-
-// Route registration
-app.get("/api/v1/users/verify-email/:token", (req, res) => {
-  const token = req.params.token;
-  return res.redirect(`${process.env.CORS_ORIGIN || 'http://localhost:5173'}/verify-email?token=${token}`);
-});
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tickets", ticketRouter);

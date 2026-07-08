@@ -14,16 +14,15 @@ const sendEmail = async (options) => {
   const emailHTML = mailGenerator.generate(options.mailgenContent);
 
   const transporter = nodemailer.createTransport({
-    host: process.env.MAITTRAP_SMTP_HOST,
-    port: parseInt(process.env.MAITTRAP_SMTP_PORT, 10),
+    service: "gmail",
     auth: {
-      user: process.env.MAITTRAP_SMTP_USER,
-      pass: process.env.MAITTRAP_SMTP_PASS,
+      user: process.env.GMAIL_SMTP_USER,
+      pass: process.env.GMAIL_SMTP_PASS,
     },
   });
 
   const email = {
-    from: "mail.aiTriageAgent@example.com",
+    from: process.env.GMAIL_SMTP_USER,
     to: options.email,
     subject: options.subject,
     text: emailTextual,
@@ -34,7 +33,7 @@ const sendEmail = async (options) => {
     await transporter.sendMail(email);
   } catch (error) {
     console.error(
-      "Email service failed. Make sure you have provided mailtrap credentials in the .env file"
+      "Email service failed. Make sure you have provided Gmail credentials in the .env file"
     );
     console.error("Error: ", error);
   }

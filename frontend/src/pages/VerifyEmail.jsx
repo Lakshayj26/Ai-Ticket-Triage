@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { authService } from "../api/auth.service";
 import { Mail, CheckCircle, AlertCircle, ArrowRight, Ticket } from "lucide-react";
@@ -11,8 +11,13 @@ const VerifyEmail = () => {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
   const [message, setMessage] = useState("");
+  const hasRequested = useRef(false);
 
   useEffect(() => {
+
+    if (hasRequested.current) return;
+    hasRequested.current = true;
+
     const performVerification = async () => {
       if (!token) {
         setMessage("Verification token is missing in the URL.");
@@ -45,7 +50,7 @@ const VerifyEmail = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#0b0f19] px-4">
       {/* Background decoration */}
       <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
-      
+
       <div className="w-full max-w-md bg-slate-900/50 border border-slate-800 backdrop-blur-xl rounded-2xl p-8 shadow-2xl z-10 text-center">
         {/* Brand header */}
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600/10 text-indigo-400 mb-6 border border-indigo-500/20">
