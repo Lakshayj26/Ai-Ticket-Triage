@@ -53,6 +53,11 @@ export const authService = {
     return response.data;
   },
 
+  async googleLogin(credential) {
+    const response = await apiClient.post("/auth/google-login", { credential });
+    return response.data;
+  },
+
   async refreshToken() {
     const response = await apiClient.post("/auth/refresh-token");
     return response.data;

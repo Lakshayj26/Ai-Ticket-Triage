@@ -503,3 +503,120 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, updatedUser, "Profile updated successfully"));
 });
 
+export const googleLogin = asyncHandler(async (req, res) => {
+    const { credential } = req.body;
+
+    if (!credential) {
+        throw new ApiError(400, "Google credential token is missing");
+    }
+
+    // Verify token with Google's tokeninfo endpoint
+    let tokenData;
+    try {
+        const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+        if (!response.ok) {
+            throw new Error("Failed to verify token with Google");
+        }
+        tokenData = await response.json();
+    } catch (error) {
+        throw new ApiError(400, "Invalid Google credential token");
+    }
+
+    // Ensure the client ID matches
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+    if (googleClientId && tokenData.aud !== googleClientId) {
+        throw new ApiError(400, "Google Client ID mismatch");
+    }
+
+    const email = tokenData.email;
+    if (!email) {
+        throw new ApiError(400, "Email not provided by Google account");
+    }
+
+    // Check if user already exists
+    let user = await prisma.users.findFirst({
+        where: { email },
+    });
+
+    if (!user) {
+        // Register a new user
+        // Generate a unique username
+        let baseUsername = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (baseUsername.length < 3) {
+            baseUsername = "user_" + baseUsername;
+        }
+        
+        let username = baseUsername;
+        let isUsernameTaken = true;
+        let counter = 0;
+        
+        while (isUsernameTaken) {
+            const existingUser = await prisma.users.findUnique({
+                where: { username },
+            });
+            if (!existingUser) {
+                isUsernameTaken = false;
+            } else {
+                counter++;
+                username = `${baseUsername}${counter}`;
+            }
+        }
+
+        // Generate a random password hash
+        const tempPassword = crypto.randomBytes(16).toString("hex");
+        const hashedPass = await hashPassword(tempPassword);
+
+        // Create the user
+        user = await prisma.users.create({
+            data: {
+                username,
+                email,
+                password: hashedPass,
+                is_email_verified: true,
+                refresh_token: null,
+                forgot_password_token: null,
+                forgot_password_expiry: null,
+            },
+        });
+
+        if (!user) {
+            throw new ApiError(500, "Something went wrong while registering user via Google");
+        }
+    } else if (!user.is_email_verified) {
+        // User exists but was not verified; verify them since Google authenticated them
+        user = await prisma.users.update({
+            where: { id: user.id },
+            data: { is_email_verified: true },
+        });
+    }
+
+    const { accesssToken, refreshToken } = await generateAccessAndRefreshToken(user.id);
+
+    const loggedInUser = await prisma.users.findUnique({
+        where: { id: user.id },
+        select: safeUserSelect,
+    });
+
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    };
+
+    return res
+        .status(200)
+        .cookie("accessToken", accesssToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    user: loggedInUser,
+                    accesssToken,
+                    refreshToken,
+                },
+                "User logged in with Google successfully"
+            )
+        );
+});
+

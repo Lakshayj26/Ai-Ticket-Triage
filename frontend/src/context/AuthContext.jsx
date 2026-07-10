@@ -47,6 +47,26 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
+  const googleLogin = async (credential) => {
+    setLoading(true);
+    try {
+      const response = await authService.googleLogin(credential);
+      if (response.success && response.data) {
+        const { accesssToken, user: userData } = response.data;
+        localStorage.setItem("accessToken", accesssToken);
+        setUser(userData);
+        return { success: true };
+      }
+      return { success: false, message: response.message || "Google login failed" };
+    } catch (error) {
+      console.error("Google login error:", error);
+      const msg = extractErrorMessage(error, "Google login failed. Please try again.");
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const login = async (emailOrUsername, password) => {
     setLoading(true);
     try {
@@ -109,6 +129,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         refreshUser,
+        googleLogin,
       }}
     >
       {children}

@@ -14,7 +14,6 @@ const VerifyEmail = () => {
   const hasRequested = useRef(false);
 
   useEffect(() => {
-
     if (hasRequested.current) return;
     hasRequested.current = true;
 
