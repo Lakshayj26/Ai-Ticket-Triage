@@ -5,7 +5,7 @@ import { UserPlus, User, Mail, KeyRound, AlertCircle, CheckCircle, Ticket } from
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register, googleLogin } = useAuth();
+  const { register, googleLogin, login } = useAuth();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -73,6 +73,10 @@ const Register = () => {
       return;
     }
 
+    // Capture values before we reset state
+    const regEmail = email;
+    const regPassword = password;
+
     const result = await register(username, email, password);
     if (result.success) {
       setSuccessMsg(
@@ -81,9 +85,19 @@ const Register = () => {
       setUsername("");
       setEmail("");
       setPassword("");
-      setTimeout(() => {
-        navigate("/login");
-      }, 3000);
+
+      const redirectToHome = async (emailVal, passwordVal) => {
+        const res = await login(emailVal, passwordVal);
+        if (res.success) {
+          setTimeout(() => {
+            navigate("/");
+          }, 3000);
+        } else {
+          setError(res.message || "Failed to auto-login. Please sign in manually.");
+        }
+      };
+
+      await redirectToHome(regEmail, regPassword);
     } else {
       setError(result.message);
     }
